@@ -1,7 +1,8 @@
-from flask import Flask, request, jsonify
+from flask import Flask, request, jsonify, session
 import random
 
 app = Flask(__name__)
+app.secret_key = 'shop_secret_key_123'
 
 def generate_password(username):
     random.seed(0x1337)
@@ -29,6 +30,7 @@ def login():
 
     # TODO: Check user credentials in database
 
+    session['username'] = username
     return jsonify({'message': 'Login successful'})
 
 @app.route('/product/<int:product_id>', methods=['GET'])
@@ -39,12 +41,15 @@ def get_product(product_id):
 
 @app.route('/transfer', methods=['POST'])
 def transfer_money():
-    from_user = request.json.get('from_user')
+    if 'username' not in session:
+        return jsonify({'error': 'Not logged in'}), 401
+
+    from_user = session['username']
     to_user = request.json.get('to_user')
     amount = request.json.get('amount')
 
-    if not from_user or not to_user or amount is None:
-        return jsonify({'error': 'from_user, to_user and amount required'}), 400
+    if not to_user or amount is None:
+        return jsonify({'error': 'to_user and amount required'}), 400
 
     # TODO: Transfer money between users in database
 
@@ -52,6 +57,9 @@ def transfer_money():
 
 @app.route('/add_product', methods=['POST'])
 def add_product():
+    if 'username' not in session:
+        return jsonify({'error': 'Not logged in'}), 401
+
     name = request.json.get('name')
     description = request.json.get('description')
     price = request.json.get('price')
@@ -62,6 +70,27 @@ def add_product():
     # TODO: Add product to database
 
     return jsonify({'message': 'Product added successfully'})
+
+@app.route('/my-products', methods=['GET'])
+def my_products():
+    if 'username' not in session:
+        return jsonify({'error': 'Not logged in'}), 401
+
+    # TODO: Get user products from database
+
+    return jsonify({'products': []})
+
+@app.route('/buy/<int:product_id>', methods=['POST'])
+def buy_product(product_id):
+    if 'username' not in session:
+        return jsonify({'error': 'Not logged in'}), 401
+
+    # TODO: Get product price from database
+    # TODO: Get user money from database
+    # TODO: Check if user has enough money
+    # TODO: Update user money and product ownership in database
+
+    return jsonify({'message': 'Product purchased successfully'})
 
 if __name__ == '__main__':
     app.run(host='0.0.0.0', port=5000, debug=True)
