@@ -7,7 +7,7 @@ main_bp = Blueprint('main', __name__)
 @main_bp.route('/')
 def index():
     current_user = get_current_user()
-    products = Product.query.filter_by(is_available=True).limit(6).all()
+    products = Product.query.filter_by(is_available=True).order_by(Product.created_at.desc()).limit(6).all()
     
     return render_template('index.html', 
                          current_user=current_user,
