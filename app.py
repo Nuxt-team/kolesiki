@@ -18,8 +18,21 @@ def create_app():
     
     
     with app.app_context():
-        db.create_all()
-        init_admin()
+        import time
+        max_retries = 30
+        for i in range(max_retries):
+            try:
+                db.create_all()
+                init_admin()
+                print(f"Database initialized successfully on attempt {i + 1}")
+                break
+            except Exception as e:
+                print(f"Database connection attempt {i + 1} failed: {e}")
+                if i < max_retries - 1:
+                    time.sleep(2)
+                else:
+                    print("Failed to connect to database after all retries")
+                    raise
     
     return app
 
