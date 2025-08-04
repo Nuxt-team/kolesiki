@@ -10,24 +10,25 @@ def generate_random_string(length=8):
     return ''.join(random.choices(string.ascii_lowercase + string.digits, k=length))
 
 def check_service(host, port):
+    """Simple service availability check"""
     base_url = f"http://{host}:{port}"
     session = requests.Session()
     session.timeout = 10
     
     try:
-        # 1. Проверяем доступность главной страницы
+        
         response = session.get(f"{base_url}/")
         if response.status_code != 200:
             print(f"Main page not accessible: {response.status_code}")
             return False
             
-        # 2. Проверяем страницу регистрации
+        
         response = session.get(f"{base_url}/auth/register-page")
         if response.status_code != 200:
             print(f"Register page not accessible: {response.status_code}")
             return False
             
-        # 3. Проверяем страницу входа
+        
         response = session.get(f"{base_url}/auth/login-page")
         if response.status_code != 200:
             print(f"Login page not accessible: {response.status_code}")
@@ -40,44 +41,34 @@ def check_service(host, port):
         return False
 
 def put_flag(host, port, flag):
+    """Put flag into service by creating a product with secret field"""
     base_url = f"http://{host}:{port}"
     session = requests.Session()
     session.timeout = 15
     
     try:
-        # Создаем случайного пользователя
-        username = f"user_{generate_random_string(6)}"
-        password = generate_random_string(10)
         
-        # Регистрируемся
-        register_data = {
-            'username': username,
-            'password': password,
-            'password_confirm': password
+        checker_data = {
+            'username': 'checker',
+            'password': '238074303089'
         }
         
-        response = session.post(f"{base_url}/auth/register", data=register_data)
+        response = session.post(f"{base_url}/auth/login", data=checker_data)
         if response.status_code not in [200, 302]:
-            print(f"Registration failed: {response.status_code}")
+            print(f"Checker login failed: {response.status_code}")
             return False
-            
-        # Логинимся
-        login_data = {
-            'username': username,
-            'password': password
-        }
         
-        response = session.post(f"{base_url}/auth/login", data=login_data)
-        if response.status_code not in [200, 302]:
-            print(f"Login failed: {response.status_code}")
+        
+        if "Неверное имя пользователя или пароль" in response.text:
+            print("Checker login failed: Invalid credentials")
             return False
             
-        # Создаем товар с флагом
+        
         product_data = {
-            'name': f"Product_{generate_random_string(6)}",
-            'description': f"Description for {generate_random_string(8)}",
-            'price': random.randint(100, 1000),
-            'secret': flag  # Флаг сохраняем в секретное поле
+            'name': f"🚩 CTF Product {generate_random_string(4)}",
+            'description': f"Special CTF challenge item - {generate_random_string(8)}",
+            'price': random.randint(50, 500),
+            'secret': flag  # Flag stored in secret field
         }
         
         response = session.post(f"{base_url}/products/add", data=product_data)
@@ -93,34 +84,52 @@ def put_flag(host, port, flag):
         return False
 
 def get_flag(host, port, flag):
+    """Get flag from service via admin panel"""
     base_url = f"http://{host}:{port}"
     session = requests.Session()
     session.timeout = 15
     
     try:
-        # Проверяем доступность API товаров с флагами (только для админа)
-        admin_data = {
-            'username': 'admin',
-            'password': '0121077111290936'
+        
+        checker_data = {
+            'username': 'checker',
+            'password': '238074303089'
         }
         
-        response = session.post(f"{base_url}/auth/login", data=admin_data)
+        response = session.post(f"{base_url}/auth/login", data=checker_data)
         if response.status_code not in [200, 302]:
-            print(f"Admin login failed: {response.status_code}")
+            print(f"Checker login failed: {response.status_code}")
+            return False
+        
+        
+        if "Неверное имя пользователя или пароль" in response.text:
+            print("Checker login failed: Invalid credentials")
             return False
             
-        # Получаем товары с флагами через админ панель
+        
         response = session.get(f"{base_url}/details")
         if response.status_code != 200:
-            print(f"Admin panel not accessible: {response.status_code}")
+            print(f"Details panel not accessible: {response.status_code}")
             return False
             
-        # Проверяем наличие флага в HTML или через API
+        
+        if "Redirecting" in response.text:
+            print("Details panel access denied - redirected")
+            return False
+            
+        
         if flag in response.text:
             print(f"Flag {flag} successfully retrieved")
             return True
         else:
             print(f"Flag {flag} not found in response")
+            print(f"Response length: {len(response.text)} chars")
+           
+            if "Товары" in response.text:
+                flag_count = response.text.count("text-warning bg-dark")
+                print(f"Found {flag_count} products with flags on the page")
+            else:
+                print("No products with flags section found")
             return False
             
     except requests.exceptions.RequestException as e:
@@ -128,52 +137,43 @@ def get_flag(host, port, flag):
         return False
 
 def main():
-    if len(sys.argv) < 4:
-        print("Usage: checker.py <action> <host> <port> [flag]")
-        sys.exit(1)
+    """Main entry point for ctf01d checker"""
+    if len(sys.argv) < 3:
+        print("Usage: checker.py <host> <action> [flag] [uuid]", file=sys.stderr)
+        sys.exit(2)  
         
-    action = sys.argv[1]
-    host = sys.argv[2]
-    port = sys.argv[3]
+    host = sys.argv[1]
+    action = sys.argv[2]
+    port = 5000  
+    flag = sys.argv[3] if len(sys.argv) > 3 else None
     
     if action == "check":
-        # Простая проверка доступности сервиса
+        
         if check_service(host, port):
-            print("Service is UP")
-            sys.exit(0)  # OK
+            sys.exit(101) 
         else:
-            print("Service is DOWN")
-            sys.exit(1)  # DOWN
+            sys.exit(104)  
             
     elif action == "put":
-        if len(sys.argv) < 5:
-            print("Flag required for put action")
-            sys.exit(1)
-        flag = sys.argv[4]
-        
+        if not flag:
+            sys.exit(110)  
         if put_flag(host, port, flag):
-            print(f"Flag {flag} put successfully")
-            sys.exit(0)  # OK
+            sys.exit(101)  
         else:
-            print(f"Failed to put flag {flag}")
-            sys.exit(1)  # CORRUPT
+            sys.exit(103)  
             
     elif action == "get":
-        if len(sys.argv) < 5:
-            print("Flag required for get action")
-            sys.exit(1)
-        flag = sys.argv[4]
-        
+        if not flag:
+            sys.exit(110)  
+            
         if get_flag(host, port, flag):
-            print(f"Flag {flag} retrieved successfully")
-            sys.exit(0)  # OK
+            sys.exit(101)  
         else:
-            print(f"Failed to get flag {flag}")
-            sys.exit(1)  # CORRUPT
+            sys.exit(103)  
             
     else:
-        print(f"Unknown action: {action}")
-        sys.exit(1)
+        print(f"Unknown action: {action}", file=sys.stderr)
+        sys.exit(2) 
 
 if __name__ == "__main__":
     main()

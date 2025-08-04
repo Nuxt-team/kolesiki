@@ -1,4 +1,4 @@
-# Конфигурация сервиса для ctf01d
+# Конфигурация чекера
 service:
   name: "kolesiki"
   display_name: "Интернет-магазин Колёсики"
@@ -9,14 +9,8 @@ service:
   checker_timeout: 30
   checker_working_directory: "/path/to/kolesiki"
   
-  # Интервалы проверки (в секундах)
+
   check_interval: 60
   put_interval: 120
   get_interval: 180
 
-# Пример добавления в основной config.yml ctf01d:
-# services:
-#   - name: "kolesiki"
-#     checker: "/path/to/kolesiki/checker.py"
-#     checker_timeout: 30
-#     port: 5000
