@@ -1,0 +1,62 @@
+{% extends "base.html" %}
+
+{% block title %}Купленные товары - Интернет-магазин Колёсики{% endblock %}
+
+{% block content %}
+<div class="row">
+    <div class="col-12">
+        <div class="d-flex justify-content-between align-items-center mb-4">
+            <h2>Мои покупки</h2>
+            <a href="{{ url_for('main.index') }}" class="btn btn-primary">Купить еще товары</a>
+        </div>
+        
+        {% if purchases %}
+            <h4 class="mb-3">История покупок ({{ total_purchases }})</h4>
+            <div class="row">
+                {% for purchase in purchases %}
+                <div class="col-md-6 col-lg-4 mb-3">
+                    <div class="card h-100 border-success">
+                        <div class="card-header bg-success text-white d-flex justify-content-between align-items-center">
+                            <small>🛒 {{ purchase.created_at.strftime('%d.%m.%Y %H:%M') }}</small>
+                            <span class="badge bg-light text-success">#{{ purchase.id }}</span>
+                        </div>
+                        <div class="card-body">
+                            <h5 class="card-title text-success">{{ purchase.product.name }}</h5>
+                            <p class="card-text text-muted">{{ purchase.product.description[:80] }}{% if purchase.product.description|length > 80 %}...{% endif %}</p>
+                            
+                            <div class="mb-2">
+                                <div class="d-flex justify-content-between align-items-center">
+                                    <span class="text-muted">Цена:</span>
+                                    <strong class="text-success">{{ "%.2f"|format(purchase.amount) }} руб.</strong>
+                                </div>
+                                <div class="d-flex justify-content-between align-items-center">
+                                    <span class="text-muted">Продавец:</span>
+                                    <strong>{{ purchase.seller.username }}</strong>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="card-footer bg-light">
+                            <div class="d-flex justify-content-between align-items-center">
+                                <small class="text-muted">Товар #{{ purchase.product_id }}</small>
+                                <div>
+                                    {% if purchase.uuid_id %}
+                                        <a href="{{ url_for('products.purchase_detail', uuid_id=purchase.uuid_id) }}" 
+                                           class="btn btn-sm btn-outline-success me-1">📋 Подробнее</a>
+                                    {% endif %}
+                                    <span class="badge bg-success">✅ Куплено</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+        {% else %}
+            <div class="alert alert-info">
+                <h4>У вас пока нет покупок</h4>
+                <p>Вы еще не покупали товары. <a href="{{ url_for('main.index') }}">Перейти к покупкам</a></p>
+            </div>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}

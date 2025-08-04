@@ -1,0 +1,117 @@
+{% extends "base.html" %}
+
+{% block title %}Системная панель - Интернет-магазин Колёсики{% endblock %}
+
+{% block content %}
+<div class="row">
+    <div class="col-12">
+        <div class="d-flex justify-content-between align-items-center mb-4">
+            <h2>🔧 Системная панель</h2>
+            <span class="badge bg-danger">Системный пользователь</span>
+        </div>
+        
+        <div class="row mb-4">
+            <div class="col-md-3">
+                <div class="card text-center">
+                    <div class="card-body">
+                        <h5 class="card-title text-primary">{{ total_users }}</h5>
+                        <p class="card-text">Всего пользователей</p>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-3">
+                <div class="card text-center">
+                    <div class="card-body">
+                        <h5 class="card-title text-success">{{ available_products }}</h5>
+                        <p class="card-text">Товаров в наличии</p>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-3">
+                <div class="card text-center">
+                    <div class="card-body">
+                        <h5 class="card-title text-warning">{{ sold_products }}</h5>
+                        <p class="card-text">Товаров продано</p>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-3">
+                <div class="card text-center">
+                    <div class="card-body">
+                        <h5 class="card-title text-info">{{ total_purchases }}</h5>
+                        <p class="card-text">Всего покупок</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="row mb-4">
+            <div class="col-md-6">
+                <div class="card text-center">
+                    <div class="card-body">
+                        <h5 class="card-title text-secondary">{{ total_transactions }}</h5>
+                        <p class="card-text">Всего переводов</p>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-6">
+                <div class="card text-center">
+                    <div class="card-body">
+                        <h5 class="card-title text-success">{{ "%.2f"|format(total_money_in_system) }} руб.</h5>
+                        <p class="card-text">Денег в системе</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="row">
+            <div class="col-12">
+                <div class="card">
+                    <div class="card-header">
+                        <h6>🚩 Товары</h6>
+                    </div>
+                    <div class="card-body">
+                        {% if products_with_flags %}
+                            <div class="row">
+                                {% for product in products_with_flags %}
+                                <div class="col-md-6 mb-3">
+                                    <div class="card border-warning">
+                                        <div class="card-body">
+                                            <h6 class="card-title">{{ product.name }}</h6>
+                                            <p class="card-text text-muted">{{ product.description[:50] }}...</p>
+                                            <div class="mb-2">
+                                                <strong>Секрет:</strong>
+                                                <code class="text-warning bg-dark p-1 rounded">{{ product.secret }}</code>
+                                            </div>
+                                            <div class="d-flex justify-content-between align-items-center">
+                                                <span>
+                                                    <strong>{{ "%.0f"|format(product.price) }} руб.</strong>
+                                                    от {{ product.owner.username }}
+                                                </span>
+                                                {% if product.is_available %}
+                                                    <span class="badge bg-success">В наличии</span>
+                                                {% else %}
+                                                    <span class="badge bg-secondary">Продан</span>
+                                                {% endif %}
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                                {% endfor %}
+                            </div>
+                        {% else %}
+                            <div class="alert alert-info">
+                                Товары не найдены.
+                            </div>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="mt-4">
+            <a href="{{ url_for('main.index') }}" class="btn btn-secondary">← Вернуться на главную</a>
+        </div>
+    </div>
+</div>
+{% endblock %}

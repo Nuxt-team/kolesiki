@@ -1,0 +1,13 @@
+---
+sourceLocationPrefix: /home/hazin/Desktop/AAD/AAD/kolesiki
+baselineLinesOfCode: 530
+unicodeNewlines: false
+columnKind: utf32
+primaryLanguage: python
+creationMetadata:
+  sha: 0b9f54a271f1a6225cee123025cc67ba2662491d
+  cliVersion: 2.22.2
+  creationTime: 2025-08-04T09:10:55.049563936Z
+overlayBaseDatabase: false
+overlayDatabase: false
+finalised: true

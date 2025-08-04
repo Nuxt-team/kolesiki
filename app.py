@@ -1,96 +1,45 @@
-from flask import Flask, request, jsonify, session
+from flask import Flask
+from flask_migrate import Migrate
+from models import db
+from config import Config
 import random
 
-app = Flask(__name__)
-app.secret_key = 'shop_secret_key_123'
+def create_app():
+    app = Flask(__name__)
+    app.config.from_object(Config)
+    
+    
+    db.init_app(app)
+    migrate = Migrate(app, db)
+    
+    
+    from routes import register_blueprints
+    register_blueprints(app)
+    
+    
+    with app.app_context():
+        db.create_all()
+        init_admin()
+    
+    return app
 
 def generate_password(username):
     random.seed(0x1337)
     return ''.join([str(random.randint(0, 9)) for _ in range(16)])
 
-@app.route('/register', methods=['POST'])
-def register():
-    username = request.json.get('username')
-    if not username:
-        return jsonify({'error': 'Username required'}), 400
+def init_admin():
+    from models import User
+    admin = User.query.filter_by(username='admin').first()
+    if not admin:
+        admin = User(username='admin')
+        admin.set_password(generate_password('admin'))
+        admin.balance = 1000000.0
+        db.session.add(admin)
+        db.session.commit()
 
-    password = generate_password(username)
-
-    # TODO: Save user to database
-
-    return jsonify({'username': username, 'password': password})
-
-@app.route('/login', methods=['POST'])
-def login():
-    username = request.json.get('username')
-    password = request.json.get('password')
-
-    if not username or not password:
-        return jsonify({'error': 'Username and password required'}), 400
-
-    # TODO: Check user credentials in database
-
-    session['username'] = username
-    return jsonify({'message': 'Login successful'})
-
-@app.route('/product/<int:product_id>', methods=['GET'])
-def get_product(product_id):
-    # TODO: Get product from database by ID
-
-    return jsonify({'id': product_id, 'name': 'Sample Product', 'description': 'Sample Description', 'price': 100})
-
-@app.route('/transfer', methods=['POST'])
-def transfer_money():
-    if 'username' not in session:
-        return jsonify({'error': 'Not logged in'}), 401
-
-    from_user = session['username']
-    to_user = request.json.get('to_user')
-    amount = request.json.get('amount')
-
-    if not to_user or amount is None:
-        return jsonify({'error': 'to_user and amount required'}), 400
-
-    # TODO: Transfer money between users in database
-
-    return jsonify({'message': f'Transferred {amount} from {from_user} to {to_user}'})
-
-@app.route('/add_product', methods=['POST'])
-def add_product():
-    if 'username' not in session:
-        return jsonify({'error': 'Not logged in'}), 401
-
-    name = request.json.get('name')
-    description = request.json.get('description')
-    price = request.json.get('price')
-
-    if not name or not description or price is None:
-        return jsonify({'error': 'name, description and price required'}), 400
-
-    # TODO: Add product to database
-
-    return jsonify({'message': 'Product added successfully'})
-
-@app.route('/my-products', methods=['GET'])
-def my_products():
-    if 'username' not in session:
-        return jsonify({'error': 'Not logged in'}), 401
-
-    # TODO: Get user products from database
-
-    return jsonify({'products': []})
-
-@app.route('/buy/<int:product_id>', methods=['POST'])
-def buy_product(product_id):
-    if 'username' not in session:
-        return jsonify({'error': 'Not logged in'}), 401
-
-    # TODO: Get product price from database
-    # TODO: Get user money from database
-    # TODO: Check if user has enough money
-    # TODO: Update user money and product ownership in database
-
-    return jsonify({'message': 'Product purchased successfully'})
+app = create_app()
 
 if __name__ == '__main__':
-    app.run(host='0.0.0.0', port=5000, debug=True)
+    import os
+    debug_mode = os.environ.get('FLASK_DEBUG', 'False').lower() == 'true'
+    app.run(host='0.0.0.0', port=5000, debug=debug_mode)

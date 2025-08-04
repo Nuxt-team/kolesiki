@@ -1,0 +1,110 @@
+{% extends "base.html" %}
+
+{% block title %}Покупка {{ purchase.uuid_id }} - Интернет-магазин Колёсики{% endblock %}
+
+{% block content %}
+<div class="row justify-content-center">
+    <div class="col-md-8">
+        <!-- Навигация назад -->
+        <div class="mb-3">
+            <a href="{{ url_for('products.purchased_products') }}" class="btn btn-outline-secondary">
+                ← Назад к покупкам
+            </a>
+        </div>
+
+        <!-- Основная информация о покупке -->
+        <div class="card">
+            <div class="card-header bg-success text-white">
+                <div class="d-flex justify-content-between align-items-center">
+                    <h4 class="mb-0">🛒 Покупка</h4>
+                    <span class="badge bg-light text-success">✅ Завершена</span>
+                </div>
+            </div>
+            <div class="card-body">
+                <div class="row">
+                    <div class="col-md-8">
+                        <h5 class="text-success">{{ purchase.product.name }}</h5>
+                        <p class="text-muted">{{ purchase.product.description }}</p>
+                        
+                        <hr>
+                        
+                        <div class="row">
+                            <div class="col-sm-6">
+                                <h6>Информация о товаре</h6>
+                                <p class="mb-1"><strong>ID товара:</strong> {{ purchase.product_id }}</p>
+                                <p class="mb-1"><strong>Цена:</strong> 
+                                    <span class="text-success fw-bold">{{ "%.2f"|format(purchase.amount) }} руб.</span>
+                                </p>
+                                {% if purchase.product.secret and current_user and current_user.id != purchase.buyer_id %}
+                                <p class="mb-1"><strong>🔐 Секретная информация:</strong><br>
+                                    <code class="text-warning bg-dark p-1 rounded">{{ purchase.product.secret }}</code>
+                                </p>
+                                {% endif %}
+                            </div>
+                            <div class="col-sm-6">
+                                <h6>Информация о продавце</h6>
+                                <p class="mb-1"><strong>Продавец:</strong> {{ purchase.seller.username }}</p>
+                                <p class="mb-1"><strong>ID продавца:</strong> {{ purchase.seller_id }}</p>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-4">
+                        <div class="card bg-light">
+                            <div class="card-body text-center">
+                                <h6>Детали покупки</h6>
+                                <p class="mb-1"><strong>Дата:</strong><br>
+                                    {{ purchase.created_at.strftime('%d.%m.%Y') }}</p>
+                                <p class="mb-1"><strong>Время:</strong><br>
+                                    {{ purchase.created_at.strftime('%H:%M:%S') }}</p>
+                                <p class="mb-0"><strong>ID покупки:</strong><br>
+                                    <code>{{ purchase.uuid_id }}</code></p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Дополнительная информация -->
+        <div class="card mt-4">
+            <div class="card-header">
+                <h6>📊 Статистика транзакции</h6>
+            </div>
+            <div class="card-body">
+                <div class="row text-center">
+                    <div class="col-md-4">
+                        <div class="border rounded p-3">
+                            <h5 class="text-primary">{{ purchase.buyer.username }}</h5>
+                            <small class="text-muted">Покупатель</small>
+                        </div>
+                    </div>
+                    <div class="col-md-4">
+                        <div class="border rounded p-3">
+                            <h5 class="text-success">{{ "%.2f"|format(purchase.amount) }} руб.</h5>
+                            <small class="text-muted">Сумма транзакции</small>
+                        </div>
+                    </div>
+                    <div class="col-md-4">
+                        <div class="border rounded p-3">
+                            <h5 class="text-info">{{ purchase.seller.username }}</h5>
+                            <small class="text-muted">Продавец</small>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Действия -->
+        <div class="card mt-4">
+            <div class="card-body">
+                <h6>Быстрые действия</h6>
+                <div class="d-flex gap-2">
+                    <a href="{{ url_for('main.index') }}" class="btn btn-primary">🛒 Купить еще товары</a>
+                    <a href="{{ url_for('products.purchased_products') }}" class="btn btn-outline-success">📋 Все мои покупки</a>
+                    <a href="{{ url_for('users.profile') }}" class="btn btn-outline-info">👤 Мой профиль</a>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

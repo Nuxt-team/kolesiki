@@ -1,0 +1,1 @@
+{"languages":{"python":{"displayName":"Python","files":["app.py","models.py","config.py","utils.py","routes/__init__.py","routes/auth.py","routes/main.py","routes/users.py","routes/products.py"],"linesOfCode":530,"name":"python"},"javascript":{"displayName":"JavaScript/TypeScript","files":["static/js/main.js"],"linesOfCode":74,"name":"javascript"}}}

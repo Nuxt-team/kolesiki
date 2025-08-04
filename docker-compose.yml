@@ -1,12 +1,10 @@
-version: "3.8"
-
 services:
     db:
         image: postgres:15
         environment:
-            POSTGRES_DB: shop
-            POSTGRES_USER: shop_user
-            POSTGRES_PASSWORD: shop_pass
+            POSTGRES_DB: kolesiki_db
+            POSTGRES_USER: kolesiki_user
+            POSTGRES_PASSWORD: your_password
         ports:
             - "5432:5432"
         volumes:
@@ -19,7 +17,7 @@ services:
         depends_on:
             - db
         environment:
-            DATABASE_URL: postgresql://shop_user:shop_pass@db:5432/shop
+            DATABASE_URL: postgresql://kolesiki_user:your_password@db:5432/kolesiki_db
 
 volumes:
     postgres_data:

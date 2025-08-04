@@ -1,0 +1,98 @@
+{% extends "base.html" %}
+
+{% block title %}Перевод денег - Интернет-магазин Колёсики{% endblock %}
+
+{% block content %}
+<div class="row justify-content-center">
+    <div class="col-md-8">
+        <div class="card">
+            <div class="card-header">
+                <h4>💸 Перевод денег</h4>
+            </div>
+            <div class="card-body">
+                {% if current_user %}
+                <div class="alert alert-info mb-4">
+                    <strong>Ваш текущий баланс:</strong> {{ "%.2f"|format(current_user.balance) }} руб.
+                </div>
+                {% endif %}
+                
+                <form method="POST" onsubmit="return validateTransferForm()">
+                    <div class="mb-3">
+                        <label for="to_user" class="form-label">👤 Получатель (имя пользователя)</label>
+                        <input type="text" class="form-control" id="to_user" name="to_user" required placeholder="Введите имя пользователя">
+                        <div class="form-text">Убедитесь, что имя пользователя введено правильно</div>
+                    </div>
+                    <div class="mb-3">
+                        <label for="amount" class="form-label">💰 Сумма (руб.)</label>
+                        <input type="number" step="0.01" min="0.01" class="form-control" id="amount" name="amount" required placeholder="0.00">
+                        <div class="form-text">Минимальная сумма перевода: 0.01 руб.</div>
+                        <div class="invalid-feedback" id="amount-error" style="display: none;">
+                            Сумма должна быть больше нуля!
+                        </div>
+                    </div>
+                    <div class="d-grid gap-2 d-md-flex justify-content-md-end">
+                        <a href="{{ url_for('main.index') }}" class="btn btn-secondary me-md-2">❌ Отмена</a>
+                        <button type="submit" class="btn btn-warning">💸 Перевести деньги</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+        
+        {% if current_user %}
+        <div class="card mt-4">
+            <div class="card-header">
+                <h6>📋 Быстрые переводы</h6>
+            </div>
+            <div class="card-body">
+                <p class="text-muted mb-3">Популярные суммы для быстрого выбора:</p>
+                <div class="btn-group" role="group">
+                    <button type="button" class="btn btn-outline-secondary btn-sm" onclick="setAmount(100)">100 руб.</button>
+                    <button type="button" class="btn btn-outline-secondary btn-sm" onclick="setAmount(500)">500 руб.</button>
+                    <button type="button" class="btn btn-outline-secondary btn-sm" onclick="setAmount(1000)">1,000 руб.</button>
+                    <button type="button" class="btn btn-outline-secondary btn-sm" onclick="setAmount(5000)">5,000 руб.</button>
+                </div>
+            </div>
+        </div>
+        {% endif %}
+    </div>
+</div>
+
+<script>
+function setAmount(amount) {
+    document.getElementById('amount').value = amount;
+}
+
+function validateTransferForm() {
+    const amountInput = document.getElementById('amount');
+    const amountError = document.getElementById('amount-error');
+    const amount = parseFloat(amountInput.value);
+    
+    // Проверяем что сумма больше нуля
+    if (amount <= 0) {
+        amountInput.classList.add('is-invalid');
+        amountError.style.display = 'block';
+        return false; // Предотвращаем отправку формы
+    }
+    
+    // Убираем ошибку если все ок
+    amountInput.classList.remove('is-invalid');
+    amountError.style.display = 'none';
+    
+    return true; // Разрешаем отправку формы
+}
+
+// Убираем ошибку при изменении поля
+document.addEventListener('DOMContentLoaded', function() {
+    const amountInput = document.getElementById('amount');
+    if (amountInput) {
+        amountInput.addEventListener('input', function() {
+            const amountError = document.getElementById('amount-error');
+            if (parseFloat(this.value) > 0) {
+                this.classList.remove('is-invalid');
+                amountError.style.display = 'none';
+            }
+        });
+    }
+});
+</script>
+{% endblock %}

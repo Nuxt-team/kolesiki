@@ -1,0 +1,88 @@
+{% extends "base.html" %}
+
+{% block title %}Главная - Интернет-магазин Колёсики{% endblock %}
+
+{% block content %}
+<div class="row">
+    <div class="col-12">
+        <div class="jumbotron bg-light p-5 rounded-lg mb-4">
+            <h1 class="display-4">Добро пожаловать в магазин Колёсики! 🛞</h1>
+            <p class="lead">Здесь вы найдете лучшие колёса и автомобильные товары по доступным ценам.</p>
+            {% if not session.username %}
+                <hr class="my-4">
+                <p>Зарегистрируйтесь или войдите в систему, чтобы начать покупки!</p>
+                <a class="btn btn-primary btn-lg me-2" href="{{ url_for('auth.register_page') }}">Регистрация</a>
+                <a class="btn btn-outline-primary btn-lg" href="{{ url_for('auth.login_page') }}">Войти</a>
+            {% endif %}
+        </div>
+    </div>
+</div>
+
+<div class="row">
+    <div class="col-md-8">
+        <h2>Популярные товары</h2>
+        <div class="row" id="products-list">
+            {% if products %}
+                {% for product in products %}
+                <div class="col-md-4 mb-3">
+                    <div class="card product-card">
+                        <div class="card-body">
+                            <h5 class="card-title">{{ product.name }}</h5>
+                            <p class="card-text">{{ product.description[:100] }}{% if product.description|length > 100 %}...{% endif %}</p>
+                            <p class="card-text"><strong>{{ "%.2f"|format(product.price) }} руб.</strong></p>
+                            <small class="text-muted">Продавец: {{ product.owner.username }}</small>
+                            <div class="btn-group mt-2">
+                                {% if session.username and session.username != product.owner.username %}
+                                    <form method="POST" action="{{ url_for('products.buy_product', product_id=product.id) }}" class="d-inline" 
+                                          onsubmit="return confirm('Вы уверены, что хотите купить этот товар?')">
+                                        <button type="submit" class="btn btn-primary btn-sm">💳 Купить</button>
+                                    </form>
+                                {% endif %}
+                                <a href="{{ url_for('products.get_product', product_id=product.id) }}" class="btn btn-outline-primary btn-sm">Подробнее</a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                {% endfor %}
+            {% else %}
+                <div class="col-12">
+                    <div class="alert alert-info">
+                        Пока нет товаров. {% if session.username %}<a href="{{ url_for('products.add_product_page') }}">Добавьте первый товар!</a>{% else %}Зарегистрируйтесь, чтобы добавлять товары.{% endif %}
+                    </div>
+                </div>
+            {% endif %}
+        </div>
+    </div>
+    
+    <div class="col-md-4">
+        <div class="card">
+            <div class="card-header">
+                <h5>Категории</h5>
+            </div>
+            <div class="card-body">
+                <ul class="list-unstyled">
+                    <li><a href="#" class="text-decoration-none">🛞 Колёса</a></li>
+                    <li><a href="#" class="text-decoration-none">🔧 Инструменты</a></li>
+                    <li><a href="#" class="text-decoration-none">🚗 Автозапчасти</a></li>
+                    <li><a href="#" class="text-decoration-none">🛠️ Аксессуары</a></li>
+                </ul>
+            </div>
+        </div>
+        
+        {% if session.username %}
+        <div class="card mt-3">
+            <div class="card-header">
+                <h5>Быстрые действия</h5>
+            </div>
+            <div class="card-body">
+                <a href="{{ url_for('users.profile') }}" class="btn btn-outline-dark btn-sm d-block mb-2">👤 Мой профиль</a>
+                <a href="{{ url_for('products.add_product_page') }}" class="btn btn-success btn-sm d-block mb-2">➕ Добавить товар</a>
+                <a href="{{ url_for('products.my_products') }}" class="btn btn-info btn-sm d-block mb-2">📦 Мои товары</a>
+                <a href="{{ url_for('products.purchased_products') }}" class="btn btn-primary btn-sm d-block mb-2">🛒 Мои покупки</a>
+                <a href="{{ url_for('users.transfer_page') }}" class="btn btn-warning btn-sm d-block">💸 Перевести деньги</a>
+            </div>
+        </div>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}
